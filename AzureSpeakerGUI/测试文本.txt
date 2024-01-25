@@ -1,0 +1,1 @@
+你好，这是AzureSpeakerGUI项目的测试朗读文本。

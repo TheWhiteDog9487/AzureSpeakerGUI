@@ -36,7 +36,7 @@
     <QtBuildConfig>debug</QtBuildConfig>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'" Label="QtSettings">
-    <QtInstall>6.5.0_msvc2019_64</QtInstall>
+    <QtInstall>6.6.1_msvc2019_64</QtInstall>
     <QtModules>core;gui;widgets</QtModules>
     <QtBuildConfig>release</QtBuildConfig>
   </PropertyGroup>
@@ -96,13 +96,26 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Settings.cpp">
+      <SubType>
+      </SubType>
+      <DynamicSource Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">input</DynamicSource>
+      <QtMocFileName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(Filename).moc</QtMocFileName>
+      <DynamicSource Condition="'$(Configuration)|$(Platform)'=='Release|x64'">input</DynamicSource>
+      <QtMocFileName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(Filename).moc</QtMocFileName>
+    </ClCompile>
     <None Include="packages.config" />
+    <QtMoc Include="Settings.hpp">
+      <SubType>
+      </SubType>
+    </QtMoc>
     <QtRcc Include="AzureSpeakerGUI.qrc" />
     <QtUic Include="AzureSpeakerGUI.ui" />
     <QtMoc Include="AzureSpeakerGUI.h" />
     <ClCompile Include="AzureSpeakerGUI.cpp" />
     <ClCompile Include="main.cpp" />
     <None Include="AzureSpeakerGUI.ico" />
+    <QtUic Include="Settings.ui" />
     <ResourceCompile Include="AzureSpeakerGUI.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
