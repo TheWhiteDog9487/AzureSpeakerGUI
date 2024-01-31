@@ -41,9 +41,13 @@ namespace TTS_Var {
     string speechKey = "";
     string speechRegion = "eastasia";
     shared_ptr<Microsoft::CognitiveServices::Speech::SpeechConfig> speechConfig = nullptr;
-    shared_ptr<Microsoft::CognitiveServices::Speech::SpeechSynthesizer> speechSynthesizer = nullptr;}
+    shared_ptr<Microsoft::CognitiveServices::Speech::SpeechSynthesizer> speechSynthesizer = nullptr;
+    shared_ptr<std::vector<uint8_t>> AudioData = nullptr;}
 
-auto TTS(wstring Text = L"") { return TTS_Var::speechSynthesizer->SpeakTextAsync(Text).get(); }
+auto TTS(wstring Text = L"") { 
+    using namespace TTS_Var;
+    auto Result = TTS_Var::speechSynthesizer->SpeakTextAsync(Text).get();
+    AudioData = Result->GetAudioData();}
 
 auto InitAzure() -> bool {
     using namespace TTS_Var;
@@ -130,7 +134,8 @@ AzureSpeakerGUI::AzureSpeakerGUI(QWidget* parent) : QMainWindow(parent) {
         speechSynthesizer = SpeechSynthesizer::FromConfig(speechConfig);
         for (auto& Line : FileContent) {
             if (Line == L"") continue;
-            ::std::thread(&TTS, Line).detach();}});
+            ::std::thread(&TTS, Line).detach();}
+        ui.SaveAudioFileButton->setEnabled(true);});
 
     connect(ui.Stop, &QPushButton::clicked, [&]() {
         ui.Start->setEnabled(true);
@@ -142,7 +147,10 @@ AzureSpeakerGUI::AzureSpeakerGUI(QWidget* parent) : QMainWindow(parent) {
         assert(speechKey != "");
         assert(speechRegion != "");
         speechConfig = SpeechConfig::FromSubscription(speechKey, speechRegion);
-        speechSynthesizer = SpeechSynthesizer::FromConfig(speechConfig);
+        speechConfig->SetOutputFormat(OutputFormat::Detailed);
+        speechConfig->SetSpeechSynthesisOutputFormat(SpeechSynthesisOutputFormat::Ogg48Khz16BitMonoOpus);
+        auto AudioConfig = AudioConfig::FromDefaultSpeakerOutput();
+        speechSynthesizer = SpeechSynthesizer::FromConfig(speechConfig,AudioConfig);
         UI = &ui;
         ui.VoiceLanguage->setEnabled(true);
         ui.VoiceName->setEnabled(true);
@@ -165,7 +173,14 @@ AzureSpeakerGUI::AzureSpeakerGUI(QWidget* parent) : QMainWindow(parent) {
             fs << ConfigFile;
             fs.close();
             FillVoiceName();
-            }).detach();});}
+            }).detach();});
+
+    connect(ui.SaveAudioFileButton, &QPushButton::clicked, [&]() {
+        fstream fs(L"输出.ogg",ios::out | ios::binary);
+        for (auto& v : *AudioData) {
+            fs << v;}
+        fs.close();
+        QMessageBox::information(this, "提示", "保存成功"); });}
     // connect(ui.Stop, &QPushButton::clicked, this, &AzureSpeakerGUI::close);}
 
 AzureSpeakerGUI::~AzureSpeakerGUI() {}
